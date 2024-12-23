@@ -39,10 +39,11 @@ pip install -r requirements.txt
 ```
 
 ### Step 4: Build the App
-Using `pyinstaller` run the following command
+Run the following command to build the app
 ```bash
 pyinstaller app.spec
 ```
+The build will appear in the `dist` folder
 
 ### Step 5: Initialize the Database
 The application automatically initializes the database when you first run it. Ensure the `Data` folder and the `job_tracker_template.db` file are in place.
