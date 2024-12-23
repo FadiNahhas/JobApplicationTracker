@@ -14,6 +14,9 @@ A Python-based desktop application to track job applications, manage events, and
 This project is compatible with **Python 3.9** or later. The following Python libraries are required:
 
 - **PyQt6**: For the graphical user interface.
+- **PyInstaller**: For building the application as an executable.
+- **pyqt6-tools**: Provides tools like Designer and Linguist for PyQt6 development.
+- **qt6-applications**: Includes additional Qt6-based applications and tools.
 
 ## Installation
 
