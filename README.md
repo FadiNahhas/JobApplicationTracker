@@ -50,3 +50,16 @@ The build will appear in the `dist` folder
 
 ### Step 5: Initialize the Database
 The application automatically initializes the database when you first run it. Ensure the `Data` folder and the `job_tracker_template.db` file are in place.
+
+### Project Structure
+- app.py: Main entry point for the application.
+- constants.py: Contains constants used throughout the project.
+- UI/: Contains the GUI design files.
+
+### License
+This project is licensed under the [MIT License](LICENSE).
+
+### Acknowledgments
+- PyQt6 for the amazing GUI toolkit.
+- SQLite for lightweight database management.
+- PyInstaller for creating standalone executables.
