@@ -87,6 +87,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 new_status = db_helper.update_application_status(app.id)
                 app.status = new_status
                 self.refresh_application_data(app)
+                self.filter_applications(self.filterMode)
 
                 QMessageBox.information(self, "Success", "Event added successfully.")
             
@@ -141,6 +142,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             app = next((app for app in self.applications if app.id == app_id), None)
             app.status = db_helper.update_application_status(app.id)
             self.refresh_application_data(app)
+            self.filter_applications(self.filterMode)
             QMessageBox.information(self, "Success", "Event deleted successfully.")
         except Exception as e:
             self.show_warning("Error", f"An error occurred: {str(e)}")
@@ -196,8 +198,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             db_helper.insert_application(new_company, new_job_title, new_application_date, new_status)
 
             # Refresh the application list
-            self.applications = db_helper.get_all_applications()
-            self.populate_table()
+            self.filter_applications(self.filterMode)
 
     def delete_application_btn_event(self):
         selected_row = self.applicationTable.currentRow()
@@ -222,8 +223,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
         db_helper.delete_application(app_id)
 
-        self.applications = db_helper.get_all_applications()
-        self.populate_table()
+        self.filter_applications(self.filterMode)
         self.reset_details_panel()
         self.applicationTable.clearSelection()
 
@@ -242,8 +242,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             app.application_date = dialog.new_application_date.toString("dd/MM/yyyy")
 
             db_helper.update_application(app.id, app.company, app.job_title, app.application_date)
-
-            self.populate_table()
+            self.refresh_application_data(app)
     
     def refresh_application_data(self, app):
         self.applications = db_helper.get_all_applications()
@@ -262,9 +261,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         event_manager.populate_events_table(self.eventsTable, app.id)
 
     def filter_applications(self, filter_mode):
+        self.filterLabel.setText(f"Filter: {filter_mode.name.title()}")
         self.filterMode = filter_mode
         all_applications = db_helper.get_all_applications()
         self.applications = apply_filter(all_applications, filter_mode)
+        self.countLabel.setText(f"Applications: {len(self.applications)}")
         self.populate_table()
 
     def update_button_states(self, app=None, has_events=False):
