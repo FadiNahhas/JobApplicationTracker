@@ -19,12 +19,13 @@ def get_all_applications():
     conn = connect_db()
     cursor = conn.cursor()
 
-    # Fetch all applications
-    cursor.execute("SELECT id, company, job_title, application_date, status FROM applications")
-    rows = cursor.fetchall()
-
+    cursor.execute("""
+        SELECT a.id, c.name, a.job_title, a.application_date, a.status 
+        FROM applications a 
+        JOIN companies c ON a.company_id = c.id
+    """)
     applications = []
-    for row in rows:
+    for row in cursor.fetchall():
         app = Application(row[0], row[1], row[2], row[3], row[4])
 
         # Fetch associated events
@@ -39,6 +40,31 @@ def get_all_applications():
     conn.close()
     return applications
 
+def get_all_company_names():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM companies ORDER BY name")
+    companies = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return companies
+
+def get_or_create_company(company_name):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM companies WHERE name = ?", (company_name,))
+    row = cursor.fetchone()
+    if row:
+        company_id = row[0]
+    else:
+        cursor.execute("INSERT INTO companies (name) VALUES (?)", (company_name,))
+        # Get ID using SELECT last_insert_rowid()
+        cursor.execute("SELECT last_insert_rowid()")
+        company_id = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return company_id
+
+
 def insert_application(company, job_title, apply_date, status):
     """
     Insert a new application into the database.
@@ -50,9 +76,10 @@ def insert_application(company, job_title, apply_date, status):
     """
     conn = connect_db()
     cursor = conn.cursor()
+    company_id = get_or_create_company(company)
 
-    cursor.execute("INSERT INTO applications (company, job_title, application_date, status) VALUES (?, ?, ?, ?)",
-                   (company, job_title, apply_date, status))
+    cursor.execute("INSERT INTO applications (company_id, job_title, application_date, status) VALUES (?, ?, ?, ?)",
+                   (company_id, job_title, apply_date, status))
     conn.commit()
     conn.close()
 
@@ -67,9 +94,10 @@ def update_application(app_id, company, job_title, apply_date):
     """
     conn = connect_db()
     cursor = conn.cursor()
+    company_id = get_or_create_company(company)
 
-    cursor.execute("UPDATE applications SET company = ?, job_title = ?, application_date = ? WHERE id = ?",
-                   (company, job_title, apply_date, app_id))
+    cursor.execute("UPDATE applications SET company_id = ?, job_title = ?, application_date = ? WHERE id = ?",
+                   (company_id, job_title, apply_date, app_id))
     conn.commit()
     conn.close()
 

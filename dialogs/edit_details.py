@@ -1,11 +1,19 @@
-from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6.QtWidgets import QDialog, QMessageBox, QCompleter
 from PyQt6 import QtCore
 from UI.edit_dialog import Ui_editDetailsPopup
+from database import db_helper
 
 class EditDetailsPopup(QDialog, Ui_editDetailsPopup):
     def __init__(self, app=None, mode="edit"):
         super().__init__()
         self.setupUi(self)
+
+        # Set up company name autocomplete
+        company_names = db_helper.get_all_company_names()
+        completer = QCompleter(company_names)
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
+        completer.setFilterMode(QtCore.Qt.MatchFlag.MatchContains)  # Match anywhere in the string
+        self.companyLineEdit.setCompleter(completer)
 
         if mode == "edit" and app:
             self.companyLineEdit.setText(app.company)
