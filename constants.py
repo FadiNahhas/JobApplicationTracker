@@ -1,7 +1,5 @@
 from enum import Enum
 
-GOOGLE_MAPS_API_KEY = "AIzaSyAVB3MJYYKpCHwbs65IwWt73SOqKH9R4w4"
-
 STATUS_PENDING = "Pending"
 STATUS_ACTIVE = "Active"
 STATUS_CLOSED = "Closed"

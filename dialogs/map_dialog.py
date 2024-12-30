@@ -3,7 +3,8 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtCore import QUrl
 from UI.map_dialog import Ui_mapDialog
 import json
-from constants import GOOGLE_MAPS_API_KEY, STATUS_PENDING, STATUS_CLOSED, STATUS_ACTIVE
+from constants import STATUS_PENDING, STATUS_CLOSED, STATUS_ACTIVE
+from config import GOOGLE_MAPS_API_KEY
 
 class MapDialog(QDialog, Ui_mapDialog):
     def __init__(self, applications):

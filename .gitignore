@@ -1,6 +1,12 @@
-# Byte-compiled / optimized / DLL files
+# Configuration files
+config.py
+
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Byte-compiled / optimized / DLL files
 *.so
 
 # Virtual environment

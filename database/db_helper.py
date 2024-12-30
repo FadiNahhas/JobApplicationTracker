@@ -4,7 +4,11 @@ import constants as c
 from models.application import Application
 from models.event import Event
 import requests
-from constants import GOOGLE_MAPS_API_KEY
+try:
+    from config import GOOGLE_MAPS_API_KEY
+except ImportError:
+    print("Please create a config.py file with your API key (see config_template.py)")
+    GOOGLE_MAPS_API_KEY = None
 
 # Define the database file path
 DB_PATH = os.path.join("Data", "job_tracker.db")

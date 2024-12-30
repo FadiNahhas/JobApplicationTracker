@@ -24,6 +24,19 @@ For a complete list of dependencies and their versions, see `requirements.txt`. 
 pip install -r requirements.txt
 ```
 
+### API Key Setup
+
+This application uses the Google Maps API for location services. To use these features:
+
+1. Get a Google Maps API key from the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a `config.py` file in the root directory (copy from `config_template.py`)
+3. Add your API key to the `config.py` file:
+```python
+GOOGLE_MAPS_API_KEY = "your-api-key-here"
+```
+
+Note: The `config.py` file is ignored by git to keep your API key secure. Never commit your actual API key to version control.
+
 ## Installation
 
 ### Step 1: Clone the Repository
