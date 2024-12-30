@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_editDetailsPopup(object):
     def setupUi(self, editDetailsPopup):
         editDetailsPopup.setObjectName("editDetailsPopup")
-        editDetailsPopup.resize(302, 142)
+        editDetailsPopup.resize(302, 176)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(editDetailsPopup)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.editDetailsForm = QtWidgets.QFormLayout()
@@ -36,6 +36,12 @@ class Ui_editDetailsPopup(object):
         self.applyDateDateEdit = QtWidgets.QDateEdit(parent=editDetailsPopup)
         self.applyDateDateEdit.setObjectName("applyDateDateEdit")
         self.editDetailsForm.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.applyDateDateEdit)
+        self.locationLabel = QtWidgets.QLabel(parent=editDetailsPopup)
+        self.locationLabel.setObjectName("locationLabel")
+        self.editDetailsForm.setWidget(3, QtWidgets.QFormLayout.ItemRole.LabelRole, self.locationLabel)
+        self.locationLineEdit = QtWidgets.QLineEdit(parent=editDetailsPopup)
+        self.locationLineEdit.setObjectName("locationLineEdit")
+        self.editDetailsForm.setWidget(3, QtWidgets.QFormLayout.ItemRole.FieldRole, self.locationLineEdit)
         self.verticalLayout_2.addLayout(self.editDetailsForm)
         self.editDetailsButtons = QtWidgets.QHBoxLayout()
         self.editDetailsButtons.setContentsMargins(64, -1, 64, -1)
@@ -60,5 +66,6 @@ class Ui_editDetailsPopup(object):
         self.jobTitleLabel.setText(_translate("editDetailsPopup", "Job Title"))
         self.applyDateLabel.setText(_translate("editDetailsPopup", "Apply Date"))
         self.applyDateDateEdit.setDisplayFormat(_translate("editDetailsPopup", "dd/MM/yyyy"))
+        self.locationLabel.setText(_translate("editDetailsPopup", "Location"))
         self.cancelButton.setText(_translate("editDetailsPopup", "Cancel"))
         self.saveButton.setText(_translate("editDetailsPopup", "Save"))

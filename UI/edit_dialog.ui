@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>302</width>
-    <height>142</height>
+    <height>176</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,6 +52,16 @@
         <string>dd/MM/yyyy</string>
        </property>
       </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="locationLabel">
+       <property name="text">
+        <string>Location</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="locationLineEdit"/>
      </item>
     </layout>
    </item>

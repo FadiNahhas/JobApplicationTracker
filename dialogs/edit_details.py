@@ -19,14 +19,17 @@ class EditDetailsPopup(QDialog, Ui_editDetailsPopup):
             self.companyLineEdit.setText(app.company)
             self.jobTitleLineEdit.setText(app.job_title)
             self.applyDateDateEdit.setDate(QtCore.QDate.fromString(app.application_date, "dd/MM/yyyy"))
+            self.locationLineEdit.setText(app.location if app.location else "")
         else:
             self.companyLineEdit.setText("")
             self.jobTitleLineEdit.setText("")
             self.applyDateDateEdit.setDate(QtCore.QDate.currentDate())
+            self.locationLineEdit.setText("")
 
         self.new_company_name = None
         self.new_job_title = None
         self.new_application_date = None
+        self.new_location = None
 
         self.saveButton.clicked.connect(self.accept_changes)
         self.cancelButton.clicked.connect(self.reject)
@@ -34,6 +37,7 @@ class EditDetailsPopup(QDialog, Ui_editDetailsPopup):
     def accept_changes(self):
         company_name = self.companyLineEdit.text().strip()
         job_title = self.jobTitleLineEdit.text().strip()
+        location = self.locationLineEdit.text().strip()
 
         if not company_name or not job_title:
             QMessageBox.warning(self, "Validation Error", "All fields are required.")
@@ -42,4 +46,5 @@ class EditDetailsPopup(QDialog, Ui_editDetailsPopup):
         self.new_company_name = company_name
         self.new_job_title = job_title
         self.new_application_date = self.applyDateDateEdit.date()
+        self.new_location = location if location else None
         self.accept()

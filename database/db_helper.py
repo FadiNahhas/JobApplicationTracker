@@ -3,6 +3,8 @@ import os
 import constants as c
 from models.application import Application
 from models.event import Event
+import requests
+from constants import GOOGLE_MAPS_API_KEY
 
 # Define the database file path
 DB_PATH = os.path.join("Data", "job_tracker.db")
@@ -11,32 +13,39 @@ def connect_db():
     return sqlite3.connect(DB_PATH)
 
 def get_all_applications():
-    """
-    Retrieve all applications and their associated events from the database.
-    Returns:
-        List[Application]: A list of Application objects, each containing associated Event objects.
-    """
+    """Retrieve all applications with company names and locations."""
     conn = connect_db()
     cursor = conn.cursor()
-
+    
     cursor.execute("""
-        SELECT a.id, c.name, a.job_title, a.application_date, a.status 
+        SELECT 
+            a.id, 
+            c.name, 
+            a.job_title, 
+            a.application_date, 
+            a.status,
+            l.city,
+            l.latitude,
+            l.longitude
         FROM applications a 
         JOIN companies c ON a.company_id = c.id
+        LEFT JOIN locations l ON a.location_id = l.id
     """)
+    
     applications = []
     for row in cursor.fetchall():
-        app = Application(row[0], row[1], row[2], row[3], row[4])
-
-        # Fetch associated events
-        cursor.execute("SELECT id, application_id, event_type, event_date FROM events WHERE application_id = ?", (row[0],))
-        event_rows = cursor.fetchall()
-        for event_row in event_rows:
-            event = Event(event_row[0], event_row[1], event_row[2], event_row[3])
-            app.add_event(event)
-
+        app = Application(
+            id=row[0],
+            company=row[1],
+            job_title=row[2],
+            application_date=row[3],
+            status=row[4],
+            location=row[5],  # city from locations table
+            latitude=row[6],  # latitude from locations table
+            longitude=row[7]  # longitude from locations table
+        )
         applications.append(app)
-
+    
     conn.close()
     return applications
 
@@ -65,41 +74,53 @@ def get_or_create_company(company_name):
     return company_id
 
 
-def insert_application(company, job_title, apply_date, status):
-    """
-    Insert a new application into the database.
-    Args:
-        company (str): The company name.
-        job_title (str): The job title.
-        apply_date (str): The application date.
-        status (str): The application status.
-    """
+def insert_application(company, job_title, apply_date, status, location=None):
+    """Insert a new application into the database."""
     conn = connect_db()
     cursor = conn.cursor()
-    company_id = get_or_create_company(company)
+    
+    try:
+        # Get or create company
+        company_id = get_or_create_company(company)
+        
+        # Get or create location if provided
+        location_id = get_or_create_location(location) if location else None
+        
+        cursor.execute("""
+            INSERT INTO applications 
+            (company_id, job_title, application_date, status, location_id) 
+            VALUES (?, ?, ?, ?, ?)
+        """, (company_id, job_title, apply_date, status, location_id))
+        
+        conn.commit()
+    finally:
+        conn.close()
 
-    cursor.execute("INSERT INTO applications (company_id, job_title, application_date, status) VALUES (?, ?, ?, ?)",
-                   (company_id, job_title, apply_date, status))
-    conn.commit()
-    conn.close()
-
-def update_application(app_id, company, job_title, apply_date):
-    """
-    Update an application in the database.
-    Args:
-        app_id (int): The application ID.
-        company (str): The company name.
-        job_title (str): The job title.
-        apply_date (str): The application date.
-    """
+def update_application(app_id, company, job_title, apply_date, status, location=None):
+    """Update an existing application."""
     conn = connect_db()
     cursor = conn.cursor()
-    company_id = get_or_create_company(company)
-
-    cursor.execute("UPDATE applications SET company_id = ?, job_title = ?, application_date = ? WHERE id = ?",
-                   (company_id, job_title, apply_date, app_id))
-    conn.commit()
-    conn.close()
+    
+    try:
+        # Get or create company
+        company_id = get_or_create_company(company)
+        
+        # Get or create location if provided
+        location_id = get_or_create_location(location) if location else None
+        
+        cursor.execute("""
+            UPDATE applications 
+            SET company_id = ?, 
+                job_title = ?, 
+                application_date = ?, 
+                status = ?,
+                location_id = ?
+            WHERE id = ?
+        """, (company_id, job_title, apply_date, status, location_id, app_id))
+        
+        conn.commit()
+    finally:
+        conn.close()
 
 def delete_application(app_id):
     """
@@ -190,3 +211,68 @@ def update_application_status(app_id):
     conn.commit()
     conn.close()
     return new_status
+
+def geocode_city(city):
+    """
+    Geocode city name to get coordinates using Google's Geocoding API.
+    Returns (latitude, longitude) tuple.
+    """
+    try:
+        # Construct the geocoding URL
+        base_url = "https://maps.googleapis.com/maps/api/geocode/json"
+        params = {
+            "address": city,
+            "key": GOOGLE_MAPS_API_KEY
+        }
+        
+        # Make the request
+        response = requests.get(base_url, params=params)
+        data = response.json()
+        
+        # Check if we got results
+        if data["status"] == "OK" and data["results"]:
+            location = data["results"][0]["geometry"]["location"]
+            return location["lat"], location["lng"]
+        else:
+            print(f"Geocoding failed for {city}: {data['status']}")
+            return None, None
+            
+    except Exception as e:
+        print(f"Error geocoding {city}: {str(e)}")
+        return None, None
+
+def get_or_create_location(city):
+    """Get location ID or create new location using geocoding"""
+    if not city:
+        return None
+        
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Check if location already exists
+        cursor.execute("SELECT id, latitude, longitude FROM locations WHERE city = ?", (city,))
+        result = cursor.fetchone()
+        
+        if result:
+            location_id = result[0]
+        else:
+            # Get coordinates for new city
+            lat, lng = geocode_city(city)
+            if lat is not None and lng is not None:
+                cursor.execute(
+                    "INSERT INTO locations (city, latitude, longitude) VALUES (?, ?, ?)",
+                    (city, lat, lng)
+                )
+                location_id = cursor.lastrowid
+            else:
+                location_id = None
+        
+        conn.commit()
+        return location_id
+        
+    except Exception as e:
+        print(f"Error in get_or_create_location: {str(e)}")
+        return None
+    finally:
+        conn.close()
