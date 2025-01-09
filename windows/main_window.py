@@ -70,6 +70,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_button_states()
 
         # Initialize table data
+        self.applications = []
+        # Defer loading of applications until after window is shown
+        QtCore.QTimer.singleShot(0, self.load_initial_data)
+
+    def load_initial_data(self):
+        """Load initial data after window is shown."""
         self.applications = db_helper.get_all_applications()
         # Set default filter mode and populate table
         self.filter_applications(c.FilterMode.ALL)
